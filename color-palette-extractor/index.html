@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Extract beautiful colors from any image. 100% client-side, no uploads, no backend.">
+    <title>Color Palette Extractor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">🎨</div>
+                    <div>
+                        <h1 class="app-title">Color Palette Extractor</h1>
+                        <p class="app-subtitle">Extract beautiful colors from any image.</p>
+                    </div>
+                </div>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📷</div>
+                <h2>Get Started</h2>
+                <p>Upload an image to extract its color palette</p>
+            </div>
+
+            <!-- Upload Area -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-content">
+                        <div class="upload-icon">⬆️</div>
+                        <h3>Drop your image here</h3>
+                        <p>or <button type="button" class="upload-link" id="browseButton">click to browse</button></p>
+                        <p class="upload-formats">PNG, JPG, JPEG, WebP</p>
+                    </div>
+                    <input 
+                        type="file" 
+                        id="imageInput" 
+                        accept="image/png,image/jpeg,image/webp"
+                        style="display: none;"
+                    >
+                </div>
+                <p class="paste-hint">💡 Tip: You can also paste an image from your clipboard (Ctrl+V / Cmd+V)</p>
+            </section>
+
+            <!-- Processing State -->
+            <div class="processing-state" id="processingState" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing image...</p>
+            </div>
+
+            <!-- Results Area -->
+            <div class="results-area" id="resultsArea" style="display: none;">
+                <div class="results-container">
+                    <!-- Left Column: Image Preview -->
+                    <div class="results-left">
+                        <div class="image-preview-card">
+                            <img id="previewImage" alt="Uploaded image preview" class="preview-image">
+                            <button class="reset-button" id="resetButton" title="Reset and upload a new image">
+                                ↻ New Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Palette -->
+                    <div class="results-right">
+                        <!-- Palette Preview -->
+                        <div class="palette-preview-card">
+                            <h3>Palette Preview</h3>
+                            <div class="palette-preview" id="palettePreview"></div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="controls-card">
+                            <div class="control-group">
+                                <label for="colorCount">Number of Colors:</label>
+                                <select id="colorCount" class="control-input">
+                                    <option value="4">4 Colors</option>
+                                    <option value="6" selected>6 Colors</option>
+                                    <option value="8">8 Colors</option>
+                                    <option value="10">10 Colors</option>
+                                    <option value="12">12 Colors</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="quality">Quality Level:</label>
+                                <select id="quality" class="control-input">
+                                    <option value="fast">Fast</option>
+                                    <option value="balanced" selected>Balanced</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <button class="generate-button" id="generateButton">Generate Palette</button>
+                        </div>
+
+                        <!-- Export Options -->
+                        <div class="export-card">
+                            <h3>Export Palette</h3>
+                            <div class="export-buttons">
+                                <button class="export-btn" id="copyHexButton" title="Copy all HEX values">
+                                    📋 Copy HEX
+                                </button>
+                                <button class="export-btn" id="downloadPngButton" title="Download as PNG">
+                                    🖼️ Download PNG
+                                </button>
+                                <button class="export-btn" id="downloadJsonButton" title="Download as JSON">
+                                    📄 JSON
+                                </button>
+                                <button class="export-btn" id="copyCssButton" title="Copy CSS variables">
+                                    🎨 CSS Vars
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Details Grid -->
+                <div class="colors-grid-section">
+                    <h3>Extracted Colors</h3>
+                    <div class="colors-grid" id="colorsGrid"></div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-state" id="errorState" style="display: none;">
+                <div class="error-icon">⚠️</div>
+                <h3 id="errorTitle">Error</h3>
+                <p id="errorMessage"></p>
+                <button class="error-retry-button" id="retryButton">Try Again</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2026 <span class="author-name">Sameer Mohammad</span></p>
+        </footer>
+    </div>
+
+    <!-- Color Detail Modal -->
+    <div class="modal" id="colorModal" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-color-preview" id="modalColorPreview"></div>
+            <div class="modal-color-values">
+                <div class="color-value-group">
+                    <label>HEX</label>
+                    <div class="color-value-display">
+                        <span id="modalHex"></span>
+                        <button class="copy-small-btn" data-type="hex">Copy</button>
+                    </div>
+                </div>
+                <div class="color-value-group">
+                    <label>RGB</label>
+                    <div class="color-value-display">
+                        <span id="modalRgb"></span>
+                        <button class="copy-small-btn" data-type="rgb">Copy</button>
+                    </div>
+                </div>
+                <div class="color-value-group">
+                    <label>HSL</label>
+                    <div class="color-value-display">
+                        <span id="modalHsl"></span>
+                        <button class="copy-small-btn" data-type="hsl">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification" id="notification" style="display: none;">
+        <span id="notificationText"></span>
+    </div>
+
+    <script src="color-utils.js"></script>
+    <script src="image-processor.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
